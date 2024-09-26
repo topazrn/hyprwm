@@ -2,8 +2,8 @@
   "uuid": "HyprWM@topazrn",
   "name": "HyprWM",
   "description": "Tile windows on a grid",
-  "shell-version": ["45", "46"],
+  "shell-version": ["47"],
   "url": "https://github.com/topazrn/HyprWM",
   "settings-schema": "org.gnome.shell.extensions.hyprwm",
-  "version": 60
+  "version": 61
 }
