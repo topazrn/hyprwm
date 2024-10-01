@@ -1,6 +1,7 @@
 import Meta from "gi://Meta";
 import Mtk from "gi://Mtk";
 import Shell from "gi://Shell";
+import Clutter from "gi://Clutter";
 
 import type {
   LayoutManager,
@@ -374,17 +375,6 @@ export default class implements Publisher<DesktopEvent>, GarbageCollector {
     this.#fitTree(tree, workArea, windows);
   }
 
-  #findIds(tree: Node<Tile | Container>): number[] {
-    const result = [];
-    if (tree.data instanceof Tile) {
-      result.push(tree.data.id);
-    } else {
-      if (tree.left) result.push(...this.#findIds(tree.left));
-      if (tree.right) result.push(...this.#findIds(tree.right));
-    }
-    return result;
-  }
-
   removeId(tree: Node<Tile | Container>, id: number): void {
     if (tree.data instanceof Tile) {
       if (tree.data.id === id) {
@@ -515,8 +505,24 @@ export default class implements Publisher<DesktopEvent>, GarbageCollector {
     }
   }
 
-  #fit(target: Meta.Window, { x, y, width, height }: Rectangle) {
+  #fit(target: Meta.Window, { x, y, width, height }: Rectangle, tile?: Tile) {
+    const actor: Meta.WindowActor = target.get_compositor_private();
+    console.log("fit", target.title);
+    
+
     this.#moveResize(target, x, y, { width, height });
+
+    actor.scaleX = 0;
+    actor.scaleY = 0;
+    actor.ease({
+      duration: 1000,
+      scaleX: 1,
+      scaleY: 1,
+      mode: Clutter.AnimationMode.EASE_IN_OUT_QUAD,
+      onComplete() {
+        console.log("ease", target.title);
+      },
+    });
   }
 
   #frameRect(target: Meta.Window): Mtk.Rectangle {
@@ -623,7 +629,7 @@ export default class implements Publisher<DesktopEvent>, GarbageCollector {
 
     if (tree.data instanceof Tile) {
       // Only possible on desktop with one window.
-      this.#fit(windows[0], workArea);
+      this.#fit(windows[0], workArea, tree.data);
       return;
     }
 
@@ -658,7 +664,7 @@ export default class implements Publisher<DesktopEvent>, GarbageCollector {
       if (tree.left.data instanceof Tile) {
         const leftId = tree.left.data.id;
         const leftWindow = windows.find(window => window.get_id() === leftId)!;
-        this.#fit(leftWindow, leftArea);
+        this.#fit(leftWindow, leftArea, tree.left.data);
       } else {
         this.#fitTree(tree.left, leftArea, windows);
       }
@@ -666,7 +672,7 @@ export default class implements Publisher<DesktopEvent>, GarbageCollector {
       if (tree.right.data instanceof Tile) {
         const rightId = tree.right.data.id;
         const rightWindow = windows.find(window => window.get_id() === rightId)!;
-        this.#fit(rightWindow, rightArea);
+        this.#fit(rightWindow, rightArea, tree.right.data);
       } else {
         this.#fitTree(tree.right, rightArea, windows);
       }
@@ -692,8 +698,10 @@ export default class implements Publisher<DesktopEvent>, GarbageCollector {
     }
 
     if (tree.data instanceof Tile) {
-      // Only possible on desktop with one window.
-      const {left: leftArea, container} = this.#splitArea(workArea);
+      tree.data.isNew = false;
+      if (!pointInRectangle(point, workArea)) return;
+
+      const { left: leftArea, container } = this.#splitArea(workArea);
 
       const temp = tree.data;
       tree.data = container;
@@ -708,14 +716,9 @@ export default class implements Publisher<DesktopEvent>, GarbageCollector {
     }
 
     if (tree.data instanceof Container && tree.left && tree.right) {
-      const {left: leftArea, right: rightArea} = this.#splitArea(workArea, tree.data);
-
-      if (pointInRectangle(point, leftArea)) {
-        this.pushTree(tree.left, point, newTile, leftArea);
-      } else {
-        this.pushTree(tree.right, point, newTile, rightArea);
-      }
-
+      const { left: leftArea, right: rightArea } = this.#splitArea(workArea, tree.data);
+      this.pushTree(tree.left, point, newTile, leftArea);
+      this.pushTree(tree.right, point, newTile, rightArea);
       return;
     }
 
@@ -736,7 +739,7 @@ export default class implements Publisher<DesktopEvent>, GarbageCollector {
       width: area.width,
       height: area.height,
     };
-    
+
     if (!container) {
       container = new Container(area.height > area.width ? "Horizontal" : "Vertical")
     }

@@ -149,13 +149,13 @@ export default class App implements GarbageCollector {
       (display, _, windowNotShown) => {
         windowShown = windowNotShown.connect("shown",
           (window) => {
-            this.#pushTree(display, window)
+            this.#pushTree(display, window, new Tile(window.get_id(), true))
           }
         );
       }
     );
     const windowReleased = display.connect("grab-op-end",
-      (display, window) => this.#pushTree(display, window)
+      (display, window) => this.#pushTree(display, window, new Tile(window.get_id(), false))
     );
     const windowLeft = display.connect("window-left-monitor",
       (display, _, window) => this.#popTree(display, window)
@@ -176,13 +176,13 @@ export default class App implements GarbageCollector {
     this.#hotkeyManager.subscribe(this.#onUserAction.bind(this));
     this.#hotkeyManager.setListeningGroups(this.#globalKeyBindingGroups);
   }
-  
+
   #initTree() {
     const workspaceManager = Shell.Global.get().workspace_manager;
     const display = Shell.Global.get().display;
     const workspaceCount = workspaceManager.nWorkspaces;
     const monitorCount = display.get_n_monitors();
-    
+
     const tree = [...Array(workspaceCount)]
       .map(_ => Array(monitorCount)
         .fill({ data: new Container("Horizontal") }));
@@ -191,28 +191,28 @@ export default class App implements GarbageCollector {
       const workArea = this.#desktopManager.workArea(monitorIdx);
       for (let workspaceIdx = 0; workspaceIdx < workspaceCount; workspaceIdx++) {
         const windows = workspaceManager
-        .get_workspace_by_index(workspaceIdx)!
-        .list_windows()
-        .filter(win => !(
-          win.minimized ||
-          win.get_monitor() !== monitorIdx ||
-          win.get_frame_type() !== Meta.FrameType.NORMAL ||
-          TitleBlacklist.some(p => p.test(win.title ?? ""))
-        ));
+          .get_workspace_by_index(workspaceIdx)!
+          .list_windows()
+          .filter(win => !(
+            win.minimized ||
+            win.get_monitor() !== monitorIdx ||
+            win.get_frame_type() !== Meta.FrameType.NORMAL ||
+            TitleBlacklist.some(p => p.test(win.title ?? ""))
+          ));
 
         let root = tree[workspaceIdx][monitorIdx];
         for (let index = 0; index < windows.length; index++) {
           const window = windows[index];
-    
+
           if (root.data instanceof Container) {
             if (!root.right) {
-              root.data = new Tile(window.get_id());
+              root.data = new Tile(window.get_id(), false);
             } else {
               root = root.right;
             }
           } else {
-            root.left = { data: new Tile(root.data.id) };
-            root.right = { data: new Tile(window.get_id()) };
+            root.left = { data: new Tile(root.data.id, false) };
+            root.right = { data: new Tile(window.get_id(), false) };
             root.data = new Container(index % 2 === 0 && workArea.width > workArea.height ? "Horizontal" : "Vertical");
             root = root.right;
           }
@@ -229,14 +229,14 @@ export default class App implements GarbageCollector {
     App.#instance = undefined as any;
   }
 
-  #pushTree(display: Meta.Display, window: Meta.Window) {
+  #pushTree(display: Meta.Display, window: Meta.Window, tile: Tile) {
     const currentWorkspace = Shell.Global.get().workspace_manager.get_active_workspace();
     const [x, y, _] = Shell.Global.get().get_pointer();
 
     this.#desktopManager.pushTree(
       this.#tree[currentWorkspace.index()][display.get_current_monitor()],
       { x, y },
-      new Tile(window.get_id()),
+      tile,
     );
     this.#desktopManager.autotile(this.#tree[currentWorkspace.index()][display.get_current_monitor()]);
   }

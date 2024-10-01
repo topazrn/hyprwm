@@ -1,8 +1,10 @@
 export class Tile {
     id: number;
+    isNew: boolean;
     
-    constructor(id: number) {
+    constructor(id: number, isNew: boolean) {
         this.id = id;
+        this.isNew = isNew;
     }
 }
 
