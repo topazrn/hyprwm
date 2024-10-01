@@ -230,6 +230,8 @@ export default class App implements GarbageCollector {
   }
 
   #pushTree(display: Meta.Display, window: Meta.Window, tile: Tile) {
+    if (window.windowType !== Meta.WindowType.NORMAL) return;
+    
     const currentWorkspace = Shell.Global.get().workspace_manager.get_active_workspace();
     const [x, y, _] = Shell.Global.get().get_pointer();
 
@@ -242,6 +244,8 @@ export default class App implements GarbageCollector {
   }
 
   #popTree(display: Meta.Display, window: Meta.Window) {
+    if (window.windowType !== Meta.WindowType.NORMAL) return;
+
     const currentWorkspace = Shell.Global.get().workspace_manager.get_active_workspace();
     this.#desktopManager.removeId(
       this.#tree[currentWorkspace.index()][display.get_current_monitor()],
