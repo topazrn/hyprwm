@@ -625,8 +625,8 @@ export default class implements Publisher<DesktopEvent>, GarbageCollector {
     }
 
     if (tree.data instanceof Tile) {
-      // Only possible on desktop with one window.
-      this.#fit(windows[0], workArea, tree.data);
+      const id = tree.data.id;
+      this.#fit(windows.find(window => window.get_id() === id)!, workArea);
       return;
     }
 
