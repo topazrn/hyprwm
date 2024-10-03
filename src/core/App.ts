@@ -144,11 +144,11 @@ export default class App implements GarbageCollector {
     this.#settings.bind("show-icon", this.#panelIcon, "visible",
       Gio.SettingsBindFlags.GET);
 
-    let windowShown: number;
     const windowEntered = display.connect("window-entered-monitor",
       (display, _, windowNotShown) => {
-        windowShown = windowNotShown.connect("shown",
+        const windowShown = windowNotShown.connect("shown",
           (window) => {
+            display.disconnect(windowShown);
             this.#pushTree(display, window, new Tile(window.get_id(), true))
           }
         );
@@ -164,7 +164,6 @@ export default class App implements GarbageCollector {
       (display, window) => this.#popTree(display, window)
     );
 
-    this.#gc.defer(() => display.disconnect(windowShown));
     this.#gc.defer(() => display.disconnect(windowEntered));
     this.#gc.defer(() => display.disconnect(windowLeft));
     this.#gc.defer(() => display.disconnect(windowGrabbed));
