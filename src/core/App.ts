@@ -247,7 +247,7 @@ export default class App implements GarbageCollector {
     if (window.windowType !== Meta.WindowType.NORMAL) return;
 
     const currentWorkspace = Shell.Global.get().workspace_manager.get_active_workspace();
-    this.#desktopManager.removeId(
+    this.#tree[currentWorkspace.index()][display.get_current_monitor()] = this.#desktopManager.removeId(
       this.#tree[currentWorkspace.index()][display.get_current_monitor()],
       window.get_id(),
     )

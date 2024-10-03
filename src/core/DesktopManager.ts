@@ -375,27 +375,24 @@ export default class implements Publisher<DesktopEvent>, GarbageCollector {
     this.#fitTree(tree, workArea, windows);
   }
 
-  removeId(tree: Node<Tile | Container>, id: number): void {
-    if (tree.data instanceof Tile) {
-      if (tree.data.id === id) {
-        tree.data = new Container("Horizontal")
-      }
-    } else {
-      if (tree.left?.data instanceof Tile && tree.right?.data instanceof Tile) {
-        if (tree.left.data.id === id) {
-          tree.left = undefined;
-          tree.data = tree.right.data
-          tree.right = undefined;
-        } else if (tree.right.data.id === id) {
-          tree.right = undefined;
-          tree.data = tree.left.data
-          tree.left = undefined;
-        }
-      }
+  removeId(tree: Node<Tile | Container>, id: number): Node<Tile | Container> {
+    if (tree.data instanceof Container && tree.left && tree.right) {
+      if (tree.left.data instanceof Container) tree.left = this.removeId(tree.left, id)
+      if (tree.right.data instanceof Container) tree.right = this.removeId(tree.right, id);
 
-      if (tree.left?.data instanceof Container) this.removeId(tree.left, id);
-      if (tree.right?.data instanceof Container) this.removeId(tree.right, id);
+      if (tree.left.data instanceof Tile && tree.left.data.id === id) {
+        return tree.right;
+      }
+      if (tree.right.data instanceof Tile && tree.right.data.id === id) {
+        return tree.left;
+      }
     }
+
+    if (tree.data instanceof Tile && tree.data.id === id) {
+      tree.data = new Container("Horizontal")
+    }
+
+    return tree;
   }
 
   /**
