@@ -712,7 +712,6 @@ export default class implements Publisher<DesktopEvent>, GarbageCollector {
     }
 
     if (tree.data instanceof Tile) {
-      tree.data.isNew = false;
       if (!pointInRectangle(point, workArea)) return;
 
       const { left: leftArea, container } = this.#splitArea(workArea);

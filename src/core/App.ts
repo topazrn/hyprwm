@@ -144,18 +144,18 @@ export default class App implements GarbageCollector {
     this.#settings.bind("show-icon", this.#panelIcon, "visible",
       Gio.SettingsBindFlags.GET);
 
-    const windowEntered = display.connect("window-entered-monitor",
-      (display, _, windowNotShown) => {
+    const windowEntered = display.connect("window-created",
+      (display, windowNotShown) => {
         const windowShown = windowNotShown.connect("shown",
           (window) => {
             display.disconnect(windowShown);
-            this.#pushTree(display, window, new Tile(window.get_id(), true))
+            this.#pushTree(display, window, new Tile(window.get_id()))
           }
         );
       }
     );
     const windowReleased = display.connect("grab-op-end",
-      (display, window) => this.#pushTree(display, window, new Tile(window.get_id(), false))
+      (display, window) => this.#pushTree(display, window, new Tile(window.get_id()))
     );
     const windowLeft = display.connect("window-left-monitor",
       (display, _, window) => this.#popTree(display, window)
@@ -205,13 +205,13 @@ export default class App implements GarbageCollector {
 
           if (root.data instanceof Container) {
             if (!root.right) {
-              root.data = new Tile(window.get_id(), false);
+              root.data = new Tile(window.get_id());
             } else {
               root = root.right;
             }
           } else {
-            root.left = { data: new Tile(root.data.id, false) };
-            root.right = { data: new Tile(window.get_id(), false) };
+            root.left = { data: new Tile(root.data.id) };
+            root.right = { data: new Tile(window.get_id()) };
             root.data = new Container(index % 2 === 0 && workArea.width > workArea.height ? "Horizontal" : "Vertical");
             root = root.right;
           }
@@ -240,6 +240,7 @@ export default class App implements GarbageCollector {
       tile,
     );
     this.#desktopManager.autotile(this.#tree[currentWorkspace.index()][display.get_current_monitor()]);
+    console.log(this.#tree);
   }
 
   #popTree(display: Meta.Display, window: Meta.Window) {
