@@ -502,24 +502,41 @@ export default class implements Publisher<DesktopEvent>, GarbageCollector {
     }
   }
 
-  #fit(target: Meta.Window, { x, y, width, height }: Rectangle, tile?: Tile) {
+  #fit(target: Meta.Window, { x, y, width, height }: Rectangle) {
+    const window: Rectangle = target.get_frame_rect();
+    if (
+      window.x === x &&
+      window.y === y &&
+      window.width === width &&
+      window.height === height
+    ) return;
+
     const actor: Meta.WindowActor = target.get_compositor_private();
-    console.log("fit", target.title);
-    
+    const actorMargin = { width: actor.width - window.width, height: actor.height - window.height }
+    const duration = 700;
 
     this.#moveResize(target, x, y, { width, height });
 
-    actor.scaleX = 0;
-    actor.scaleY = 0;
+    actor.scaleX = (window.width / width);
+    actor.scaleY = (window.height / height);
+    actor.translationX = (window.x - x) + ((1 - actor.scaleX) * actorMargin.width / 2);
+    actor.translationY = (window.y - y) + ((1 - actor.scaleY) * actorMargin.height / 2);
+    console.log("started", target.title);
     actor.ease({
-      duration: 1000,
+      translationX: 0,
+      translationY: 0,
       scaleX: 1,
       scaleY: 1,
-      mode: Clutter.AnimationMode.EASE_IN_OUT_QUAD,
-      onComplete() {
-        console.log("ease", target.title);
+      mode: Clutter.AnimationMode.EASE_OUT_EXPO,
+      duration: duration,
+      onComplete: () => {
+        // For some reason onComplete executes immediately after start.
+        // So I had to manually use setTimeout for now.
+        setTimeout(() => {
+          console.log("completed", target.title);
+        }, duration);
       },
-    });
+    })
   }
 
   #frameRect(target: Meta.Window): Mtk.Rectangle {
@@ -661,7 +678,7 @@ export default class implements Publisher<DesktopEvent>, GarbageCollector {
       if (tree.left.data instanceof Tile) {
         const leftId = tree.left.data.id;
         const leftWindow = windows.find(window => window.get_id() === leftId)!;
-        this.#fit(leftWindow, leftArea, tree.left.data);
+        this.#fit(leftWindow, leftArea);
       } else {
         this.#fitTree(tree.left, leftArea, windows);
       }
@@ -669,7 +686,7 @@ export default class implements Publisher<DesktopEvent>, GarbageCollector {
       if (tree.right.data instanceof Tile) {
         const rightId = tree.right.data.id;
         const rightWindow = windows.find(window => window.get_id() === rightId)!;
-        this.#fit(rightWindow, rightArea, tree.right.data);
+        this.#fit(rightWindow, rightArea);
       } else {
         this.#fitTree(tree.right, rightArea, windows);
       }
