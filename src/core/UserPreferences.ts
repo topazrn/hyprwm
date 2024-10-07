@@ -5,7 +5,7 @@ import { ExtensionSettings } from "../types/settings.js";
  * Provides user preferences.
  */
 export interface UserPreferencesProvider {
-  getInset(primary: boolean): Inset;
+  getInset(): Inset;
   getSpacing(): number;
 }
 
@@ -29,14 +29,14 @@ export default class implements UserPreferencesProvider {
    * @param primary Whether to request the inset for the primary monitor.
    * @returns The inset for the requested monitor (primary or secondary).
    */
-  getInset(primary: boolean): Inset {
-    const setting = primary ? "primary" : "secondary";
+  getInset(): Inset {
+    const gapsOut = this.#settings.get_int("general-gaps-out");
 
     return {
-      top: this.#settings.get_int(`insets-${setting}-top`),
-      bottom: this.#settings.get_int(`insets-${setting}-bottom`),
-      left: this.#settings.get_int(`insets-${setting}-left`),
-      right: this.#settings.get_int(`insets-${setting}-right`),
+      top: gapsOut,
+      bottom: gapsOut,
+      left: gapsOut,
+      right: gapsOut,
     };
   }
 
@@ -48,6 +48,6 @@ export default class implements UserPreferencesProvider {
    * @returns The window spacing in pixel.
    */
   getSpacing(): number {
-    return this.#settings.get_int("window-spacing");
+    return this.#settings.get_int("general-gaps-in");
   }
 }
