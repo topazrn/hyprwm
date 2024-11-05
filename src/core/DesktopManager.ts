@@ -7,6 +7,7 @@ import { Node } from "../types/tree.js";
 import { GarbageCollection, GarbageCollector } from "../util/gc.js";
 import { UserPreferencesProvider } from "./UserPreferences.js";
 import { Container, Tile } from "../util/tile.js";
+import { EasingParamsWithProperties } from "@girs/gnome-shell/extensions/global";
 
 export const TitleBlacklist: RegExp[] = [
   // Desktop Icons NG (see https://github.com/gTile/gTile/issues/336#issuecomment-1804267328)
@@ -196,14 +197,20 @@ export default class implements GarbageCollector {
     actor.translationX = (window.x - x) + ((1 - actor.scaleX) * actorMargin.width / 2);
     actor.translationY = (window.y - y) + ((1 - actor.scaleY) * actorMargin.height / 2);
     
-    actor.ease({
+    const easeParams: EasingParamsWithProperties = {
       translationX: 0,
       translationY: 0,
       scaleX: 1,
       scaleY: 1,
       mode: Clutter.AnimationMode.EASE_OUT_EXPO,
       duration: duration,
-    })
+    }
+
+    // Somehow TS Server does not acknowledge the existence of the ease
+    // method from Clutter.Actor: "Property 'ease' does not exist on 
+    // type 'WindowActor'.ts(2339)""
+    // @ts-ignore
+    actor.ease(easeParams)
   }
 
   #workArea(): Rectangle {
