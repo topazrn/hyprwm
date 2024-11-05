@@ -1,22 +1,48 @@
 {
   "name": "gnome-shell-extension-hyprtile",
+  "type": "module",
   "version": "1.0.0",
-  "author": "Topaz Rindu Nabiyallah <topazsorowako2@gmail.com>",
-  "module": "dist/extension.js",
   "description": "HyprTile Gnome extension",
+  "module": "dist/extension.js",
+  "author": "Topaz Rindu Nabiyallah <topazsorowako2@gmail.com>",
   "license": "GPL-2.0-or-later",
+  "devDependencies": {
+    "@ava/typescript": "^5.0.0",
+    "@girs/adw-1": "^1.6.0-4.0.0-beta.16",
+    "@girs/clutter-15": "^15.0.0-4.0.0-beta.16",
+    "@girs/gdk-4.0": "^4.0.0-4.0.0-beta.16",
+    "@girs/gio-2.0": "^2.82.0-4.0.0-beta.16",
+    "@girs/glib-2.0": "^2.82.0-4.0.0-beta.16",
+    "@girs/gnome-shell": "^47.0.0-next.4",
+    "@girs/gobject-2.0": "^2.82.0-4.0.0-beta.16",
+    "@girs/gtk-4.0": "^4.15.5-4.0.0-beta.16",
+    "@girs/meta-15": "^15.0.0-4.0.0-beta.16",
+    "@girs/mtk-15": "^15.0.0-4.0.0-beta.16",
+    "@girs/pango-1.0": "^1.54.0-4.0.0-beta.16",
+    "@girs/shell-15": "^15.0.0-4.0.0-beta.16",
+    "@girs/st-15": "^15.0.0-4.0.0-beta.16",
+    "ava": "^6.1.3",
+    "typescript": "^5.4.5"
+  },
+  "ava": {
+    "typescript": {
+      "rewritePaths": {
+        "src/": "out/src/",
+        "test/": "out/test/"
+      },
+      "compile": false
+    }
+  },
   "scripts": {
     "clean": "git clean -qxf ':/dist' ':/out' hyprtile.dist.tgz",
     "prebuild": "$npm_execpath run clean",
-    "build": "bun build --config tsconfig.prod.json",
+    "build": "tsc -p tsconfig.prod.json",
     "postbuild": "rm -rf dist/types",
     "prebuild:dist": "$npm_execpath run build",
     "build:dist": "tar -czf hyprtile.dist.tgz -C dist .",
     "install:extension": "gnome-extensions install -f hyprtile.dist.tgz",
+    "pretest": "tsc",
+    "test": "ava",
     "check": "tsc --noEmit"
-  },
-  "type": "module",
-  "devDependencies": {
-    "@girs/gnome-shell": "47.0.0-next.4"
   }
 }
