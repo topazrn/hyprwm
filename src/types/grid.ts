@@ -1,7 +1,7 @@
 /**
  * Represents a margin with the a specified thickness in pixels.
  */
-export interface Inset {
+export interface Margins {
   top: number;
   right: number;
   bottom: number;

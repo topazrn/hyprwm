@@ -159,9 +159,9 @@ export default class implements GarbageCollector {
     // All internal calculations fictively operate as if the actual window frame
     // size would also incorporate the user-defined window spacing. Only when a
     // window is actually moved this spacing gets deducted.
-    const spacing = this.#userPreferences.getSpacing();
-    size.x += spacing;
-    size.y += spacing;
+    const gapsIn = this.#userPreferences.gapsIn;
+    size.x += (gapsIn.left + gapsIn.right) / 2;
+    size.y += (gapsIn.top + gapsIn.bottom) / 2;
 
     // As of Nov '23 the `move_resize_frame` works for almost all application
     // windows. However, a user report pointed out that for gVim, the window is
@@ -173,7 +173,7 @@ export default class implements GarbageCollector {
     target.move_frame(true, size.x, size.y);
     if (size) {
       const { width: w, height: h } = size;
-      target.move_resize_frame(true, size.x, size.y, w - spacing * 2, h - spacing * 2);
+      target.move_resize_frame(true, size.x, size.y, w - gapsIn.left - gapsIn.right, h - gapsIn.top - gapsIn.bottom);
     }
   }
 
@@ -215,23 +215,23 @@ export default class implements GarbageCollector {
 
   #workArea(): Rectangle {
     const
-      inset = this.#userPreferences.getInset(),
+      gapsout = this.#userPreferences.gapsOut,
       workArea = this.#workspaceManager
         .get_workspace_by_index(this.#workspaceIdx)!
         .get_work_area_for_monitor(this.#monitorIdx),
-      top = Math.clamp(inset.top, 0, Math.floor(workArea.height / 2)),
-      bottom = Math.clamp(inset.bottom, 0, Math.floor(workArea.height / 2)),
-      left = Math.clamp(inset.left, 0, Math.floor(workArea.width / 2)),
-      right = Math.clamp(inset.right, 0, Math.floor(workArea.width / 2)),
-      spacing = this.#userPreferences.getSpacing();
+      top = Math.clamp(gapsout.top, 0, Math.floor(workArea.height / 2)),
+      bottom = Math.clamp(gapsout.bottom, 0, Math.floor(workArea.height / 2)),
+      left = Math.clamp(gapsout.left, 0, Math.floor(workArea.width / 2)),
+      right = Math.clamp(gapsout.right, 0, Math.floor(workArea.width / 2)),
+      gapsIn = this.#userPreferences.gapsIn;
 
     // The fictitious expansion of the workarea by the user-configured spacing
     // effectively acts as a countermeasure so that windows do always align with
     // the screen edge, i.e., unless the user explicitly configured an inset.
-    workArea.x += left - spacing;
-    workArea.y += top - spacing;
-    workArea.width -= left + right - spacing * 2;
-    workArea.height -= top + bottom - spacing * 2;
+    workArea.x += left - (gapsIn.left + gapsIn.right) / 2;
+    workArea.y += top - (gapsIn.top + gapsIn.bottom) / 2;
+    workArea.width -= left + right - gapsIn.left - gapsIn.right;
+    workArea.height -= top + bottom - gapsIn.top - gapsIn.bottom;
 
     return workArea;
   }

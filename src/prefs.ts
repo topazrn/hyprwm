@@ -12,6 +12,7 @@ import {
   StringSettingKey,
 } from "./types/settings.js";
 import { GarbageCollection } from "./util/gc.js";
+import { TitleBlacklist } from "./core/DesktopManager.js";
 
 export default class extends ExtensionPreferences {
   #gc!: GarbageCollection;
@@ -53,15 +54,15 @@ export default class extends ExtensionPreferences {
 
     {
       const group = new Adw.PreferencesGroup({
-        title: "Inset &amp; Spacing",
+        title: "Gaps",
         description:
-          "Note: The window spacing is additive, i.e., two adjacent windows " +
+          "Note: The gaps is additive, i.e., two adjacent windows " +
           "will have twice the spacing that is configured below."
       });
       page.add(group);
 
-      group.add(this.#spinRow("general-gaps-in", 0, 500, 1));
-      group.add(this.#spinRow("general-gaps-out", 0, 500, 1));
+      group.add(this.#entryRow("general-gaps-in"));
+      group.add(this.#entryRow("general-gaps-out"));
     }
 
    return page;
@@ -75,6 +76,7 @@ export default class extends ExtensionPreferences {
     const row = new Adw.SwitchRow({
       ...params,
       title: settingsSchemaKey.get_summary() ?? undefined,
+      subtitle: settingsSchemaKey.get_description() ?? undefined,
     });
 
     this.#settings.bind(schemaKey, row, "active", Gio.SettingsBindFlags.DEFAULT);
@@ -90,6 +92,7 @@ export default class extends ExtensionPreferences {
     const settingsSchemaKey = this.#settings.settings_schema.get_key(schemaKey);
     const row = new Adw.SpinRow({
       title: settingsSchemaKey.get_summary() ?? undefined,
+      subtitle: settingsSchemaKey.get_description() ?? undefined,
     });
     row.adjustment.lower = lower;
     row.adjustment.upper = upper;
@@ -107,7 +110,7 @@ export default class extends ExtensionPreferences {
       editable: true,
       show_apply_button: true,
     });
-    this.#settings.bind(schemaKey, row, "text", Gio.SettingsBindFlags.DEFAULT);
+    row.connect("apply", (row) => this.#settings.set_string(schemaKey, row.text))
 
     return row;
   }

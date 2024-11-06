@@ -13,14 +13,14 @@ export type BoolSettingKey =
  * Key names in the GSettings schema that reference a numeric value.
  */
 export type NumberSettingKey =
-  "general-gaps-in" |
-  "general-gaps-out";
+  "tbd";
 
 /**
  * Key names in the GSettings schema that reference a string value.
  */
 export type StringSettingKey =
-  "tbd";
+  "general-gaps-in" |
+  "general-gaps-out";
 
 /**
  * Key names in the GSettings schema.

@@ -8,7 +8,6 @@ import {
 import { GarbageCollection, GarbageCollector } from "../util/gc.js";
 import DesktopManager from "./DesktopManager.js";
 import UserPreferences from "./UserPreferences.js";
-import { Config } from "../types/config.js";
 
 type StripPrefix<S extends string> = S extends `${string}-${infer U}` ? U : S;
 type StartsWith<S extends string, Prefix extends string> =
@@ -28,7 +27,6 @@ export default class App implements GarbageCollector {
   #gc: GarbageCollection;
   #settings: ExtensionSettings;
   #desktopManager: DesktopManager;
-  #config: Config;
 
   /**
    * Creates a new singleton instance.
@@ -60,12 +58,6 @@ export default class App implements GarbageCollector {
       userPreferences: new UserPreferences({ settings: this.#settings }),
     });
     this.#gc.defer(() => this.#desktopManager.release());
-    this.#config = {
-      general: {
-        ["gaps-in"]: this.#settings.get_int("general-gaps-in"),
-        ["gaps-out"]: this.#settings.get_int("general-gaps-out"),
-      }
-    }
 
     // --- event handlers ---
     const chid = this.#settings.connect("changed", (_, key: SettingKey) => this.#onSettingsChanged(key));
@@ -84,9 +76,6 @@ export default class App implements GarbageCollector {
   }
 
   #onSettingsGeneralChanged(key: GeneralSettingKey) {
-    const prop = key.replace("general-", "") as StripPrefix<GeneralSettingKey>
-    this.#config.general[prop] = this.#settings.get_int(key) ?? 0;
-
     this.#desktopManager.autotile({ all: true })
   }
 }

@@ -1,12 +1,12 @@
-import { Inset } from "../types/grid.js";
+import { Margins } from "../types/grid.js";
 import { ExtensionSettings } from "../types/settings.js";
 
 /**
  * Provides user preferences.
  */
 export interface UserPreferencesProvider {
-  getInset(): Inset;
-  getSpacing(): number;
+  get gapsOut(): Margins;
+  get gapsIn(): Margins;
 }
 
 export interface UserPreferencesParams {
@@ -24,13 +24,30 @@ export default class implements UserPreferencesProvider {
   }
 
   /**
-   * The monitor inset to be respected when performing window resize operations.
+   * gaps between windows, also supports 
+   * css style gaps (top, right, bottom, left -> 5,10,15,20)
    *
-   * @param primary Whether to request the inset for the primary monitor.
-   * @returns The inset for the requested monitor (primary or secondary).
+   * @returns The margins for the requested monitor.
    */
-  getInset(): Inset {
-    const gapsOut = this.#settings.get_int("general-gaps-out");
+  get gapsIn(): Margins {
+    const gapsIn = parseInt(this.#settings.get_string("general-gaps-in"));
+
+    return {
+      top: gapsIn,
+      bottom: gapsIn,
+      left: gapsIn,
+      right: gapsIn,
+    };
+  }
+
+  /**
+   * gaps between windows and monitor edges, also supports 
+   * css style gaps (top, right, bottom, left -> 5,10,15,20)
+   *
+   * @returns The margins for the requested monitor.
+   */
+  get gapsOut(): Margins {
+    const gapsOut = parseInt(this.#settings.get_string("general-gaps-out"));
 
     return {
       top: gapsOut,
@@ -38,16 +55,5 @@ export default class implements UserPreferencesProvider {
       left: gapsOut,
       right: gapsOut,
     };
-  }
-
-  /**
-   * The spacing that is expected to be applied to windows when moved and/or
-   * resized. Windows frames are shrunk by the specified spacing unless they are
-   * placed at the edge of the screen, in which case spacing has no effect.
-   *
-   * @returns The window spacing in pixel.
-   */
-  getSpacing(): number {
-    return this.#settings.get_int("general-gaps-in");
   }
 }

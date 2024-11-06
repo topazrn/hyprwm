@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <schemalist>
   <schema path="/org/gnome/shell/extensions/hyprtile/" id="org.gnome.shell.extensions.hyprtile" >
-    <key type="i" name="general-gaps-in">
-      <default>0</default>
-      <summary>gaps between windows, also supports css style gaps (top, right, bottom, left -&gt; 5,10,15,20)</summary>
+    <key type="s" name="general-gaps-in">
+      <summary>Gaps In</summary>
+      <description>Gaps between windows, also supports css style gaps (top, right, bottom, left -&gt; 5,10,15,20)</description>
+      <default>'0'</default>
     </key>
-    <key type="i" name="general-gaps-out">
-      <default>0</default>
-      <summary>gaps between windows and monitor edges, also supports css style gaps (top, right, bottom, left -&gt; 5,10,15,20)</summary>
+    <key type="s" name="general-gaps-out">
+      <summary>Gaps Out</summary>
+      <description>Gaps between windows and monitor edges, also supports css style gaps (top, right, bottom, left -&gt; 5,10,15,20)</description>
+      <default>'0'</default>
     </key>
   </schema>
 </schemalist>
