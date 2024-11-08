@@ -1,12 +1,12 @@
-import { Margins } from "../types/grid.js";
+import { Spacing } from "../types/grid.js";
 import { ExtensionSettings } from "../types/settings.js";
 
 /**
  * Provides user preferences.
  */
 export interface UserPreferencesProvider {
-  get gapsOut(): Margins;
-  get gapsIn(): Margins;
+  get gapsOut(): Spacing;
+  get gapsIn(): Spacing;
 }
 
 export interface UserPreferencesParams {
@@ -27,9 +27,9 @@ export default class implements UserPreferencesProvider {
    * gaps between windows, also supports 
    * css style gaps (top, right, bottom, left -> 5,10,15,20)
    *
-   * @returns The margins for the requested monitor.
+   * @returns The spacing for the requested monitor.
    */
-  get gapsIn(): Margins {
+  get gapsIn(): Spacing {
     const gapsIn = parseInt(this.#settings.get_string("general-gaps-in"));
 
     return {
@@ -44,9 +44,9 @@ export default class implements UserPreferencesProvider {
    * gaps between windows and monitor edges, also supports 
    * css style gaps (top, right, bottom, left -> 5,10,15,20)
    *
-   * @returns The margins for the requested monitor.
+   * @returns The spacing for the requested monitor.
    */
-  get gapsOut(): Margins {
+  get gapsOut(): Spacing {
     const gapsOut = parseInt(this.#settings.get_string("general-gaps-out"));
 
     return {

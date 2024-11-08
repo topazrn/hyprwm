@@ -1,7 +1,7 @@
 /**
- * Represents a margin with the a specified thickness in pixels.
+ * Represents a spacing with the a specified thickness in pixels.
  */
-export interface Margins {
+export interface Spacing {
   top: number;
   right: number;
   bottom: number;
