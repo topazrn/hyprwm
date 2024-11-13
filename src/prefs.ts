@@ -13,6 +13,7 @@ import {
 } from "./types/settings.js";
 import { GarbageCollection } from "./util/gc.js";
 import { TitleBlacklist } from "./core/DesktopManager.js";
+import { Parser, SpacingParser, Stringifiable } from "./util/parser.js";
 
 export default class extends ExtensionPreferences {
   #gc!: GarbageCollection;
@@ -61,11 +62,11 @@ export default class extends ExtensionPreferences {
       });
       page.add(group);
 
-      group.add(this.#entryRow("general-gaps-in"));
-      group.add(this.#entryRow("general-gaps-out"));
+      group.add(this.#entryRow("general-gaps-in", (row) => new SpacingParser(row.get_text())));
+      group.add(this.#entryRow("general-gaps-out", (row) => new SpacingParser(row.get_text())));
     }
 
-   return page;
+    return page;
   }
 
   #switchRow(
@@ -103,15 +104,22 @@ export default class extends ExtensionPreferences {
     return row;
   }
 
-  #entryRow(schemaKey: StringSettingKey) {
+  #entryRow(schemaKey: StringSettingKey, entryParser: (row: Adw.EntryRow) => Stringifiable) {
     const settingsSchemaKey = this.#settings.settings_schema.get_key(schemaKey);
     const row = new Adw.EntryRow({
       title: settingsSchemaKey.get_summary() ?? undefined,
+      text: this.#settings.get_string(schemaKey),
       editable: true,
       show_apply_button: true,
     });
-    row.connect("apply", (row) => this.#settings.set_string(schemaKey, row.text))
 
+    row.connect("apply", (row) => {
+      const parsed = entryParser(row).toString();
+      row.show_apply_button = false;
+      row.set_text(parsed);
+      this.#settings.set_string(schemaKey, parsed);
+      row.show_apply_button = true;
+    });
     return row;
   }
 }

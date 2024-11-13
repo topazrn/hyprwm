@@ -1,5 +1,6 @@
 import { Spacing } from "../types/grid.js";
 import { ExtensionSettings } from "../types/settings.js";
+import { SpacingParser } from "../util/parser.js";
 
 /**
  * Provides user preferences.
@@ -30,14 +31,7 @@ export default class implements UserPreferencesProvider {
    * @returns The spacing for the requested monitor.
    */
   get gapsIn(): Spacing {
-    const gapsIn = parseInt(this.#settings.get_string("general-gaps-in"));
-
-    return {
-      top: gapsIn,
-      bottom: gapsIn,
-      left: gapsIn,
-      right: gapsIn,
-    };
+    return new SpacingParser(this.#settings.get_string("general-gaps-in")).value;
   }
 
   /**
@@ -47,13 +41,6 @@ export default class implements UserPreferencesProvider {
    * @returns The spacing for the requested monitor.
    */
   get gapsOut(): Spacing {
-    const gapsOut = parseInt(this.#settings.get_string("general-gaps-out"));
-
-    return {
-      top: gapsOut,
-      bottom: gapsOut,
-      left: gapsOut,
-      right: gapsOut,
-    };
+    return new SpacingParser(this.#settings.get_string("general-gaps-out")).value;
   }
 }
